@@ -1,0 +1,141 @@
+version: '3.7'
+
+services:
+
+  nginx:
+    image: ${REGISTRY}:nginx
+    command: /bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & cp -f /etc/nginx/templates/*.conf /etc/nginx/xtra/ & nginx -g "daemon off;"'
+    env_file:
+      - .env
+    volumes:
+      - ${CSCART_NGINX_CONF}:/etc/nginx/conf.d
+      - ${CSCART_NGINX_LOGS}:/var/log/nginx
+      - ${CSCART_HOME}:/var/www/html
+      - ${CERTBOT_DATA}/conf:/etc/letsencrypt
+      - ${CERTBOT_DATA}/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      cscart:
+        ipv4_address: 10.66.0.3
+        aliases:
+          - front
+          - nginx
+    container_name: nginx
+    depends_on:
+      - phpfpm
+    restart: unless-stopped
+
+  phpfpm:
+    image: ${REGISTRY}:phpfpm81
+    volumes:
+      - ${CSCART_HOME}:/var/www/html
+      - ${CSCART_PHP_CONF}:/usr/local/etc/php/conf.d
+      - ${CSCART_CRON_DIR}:/etc/cron.d
+    networks:
+      cscart:
+        ipv4_address: 10.66.0.4
+        aliases:
+          - php-fpm
+          - php
+          - back
+          - cron
+    container_name: php
+    restart: unless-stopped
+
+  mysql:
+    image: ${REGISTRY}:mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${CSCART_MYSQL_RPASS}
+      MYSQL_DATABASE: ${CSCART_MYSQL_DB}
+      MYSQL_USER: ${CSCART_MYSQL_USER}
+      MYSQL_PASSWORD: ${CSCART_MYSQL_PASS}
+    command: mysqld --sql-mode="NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" --character_set_server="utf8" --character_set_filesystem="utf8" --collation-server="utf8_general_ci" --init-connect='SET NAMES utf8' --init_connect='SET collation_connection = utf8_general_ci' --skip-character-set-client-handshake
+    volumes:
+      - ${CSCART_MYSQL_LOGS}:/var/log:rw
+      - ${CSCART_MYSQL_DATA}:/var/lib/mysql:rw
+      - ${CSCART_MYSQL_CONF}:/etc/mysql/conf.d:ro
+    networks:
+      cscart:
+        ipv4_address: 10.66.0.5
+        aliases:
+          - db
+    container_name: mysql
+    restart: unless-stopped
+
+  fail2ban:
+    image: ${REGISTRY}:fail2ban
+    container_name: fail2ban
+    network_mode: "host"
+    env_file:
+      - .env
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ${CSCART_FAIL2BAN_DATA}:/data
+      - /var/log:/var/log:ro
+    restart: unless-stopped
+
+  redis:
+    image: ${REGISTRY}:redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - ${CSCART_REDIS_DATA}:/data
+    networks:
+      cscart:
+        ipv4_address: 10.66.0.6
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    entrypoint:  "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      cscart:
+    volumes:
+      - ${CERTBOT_DATA}/conf:/etc/letsencrypt
+      - ${CERTBOT_DATA}/www:/var/www/certbot
+
+  ftp:
+    image: ${REGISTRY}:ftp
+    container_name: ftp
+    environment:
+      PASV_ADDRESS: 10.66.0.7
+      FTP_USER_NAME: ${CSCART_FTP_USER}
+      FTP_USER_PASS: ${CSCART_FTP_PASS}
+    restart: always
+    ports:
+      - "20:20"
+      - "21:21"
+      - "50000-50099:50000-50099"
+    volumes:
+      - ${CSCART_HOME}:/var/www/html:rw
+      - ${CSCART_FTP_LOGS}:/var/log/vsftpd:rw
+    networks:
+      cscart:
+        ipv4_address: 10.66.0.7
+
+  mail:
+    image: ${REGISTRY}:mail
+    container_name: mail
+    environment:
+      HOSTNAME: ${CSCART_MAIL_HOSTNAME}
+      SUBNET: '10.66'
+    restart: unless-stopped
+    networks:
+      cscart:
+        ipv4_address: 10.66.0.8
+
+networks:
+  cscart:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      -
+        subnet: 10.66.0.0/24
