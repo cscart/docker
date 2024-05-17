@@ -14,7 +14,7 @@ Please use strong passwords in web and FTP services!
 
 ```
 git clone https://github.com/cscart/docker.git
-cd cscart-docker
+cd docker
 chmod +x ./install.sh
 cp .env.example .env
 ```
