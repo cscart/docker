@@ -13,7 +13,7 @@ Check [Official documentation](https://docs.docker.com/engine/install/ubuntu/) f
 Please use strong passwords in web and FTP services!
 
 ```
-git clone https://github.com/defremov-cscart/cscart-docker.git
+git clone https://github.com/cscart/docker.git
 cd cscart-docker
 chmod +x ./install.sh
 cp .env.example .env
