@@ -43,6 +43,14 @@ run install script
 Open your domain name in browser to install CS-Cart.
 Use "mysql" in MySQL Server Host and credentials from .env (CSCART_MYSQL_DB, CSCART_MYSQL_USER, CSCART_MYSQL_PASS).
 
+## Reinstall project
+
+This command delete all containers and data.
+In project directory run
+```
+docker compose down && rm -rf config data logs
+```
+
 ## Docker commands
 
 In root project dir you can use this commands:
