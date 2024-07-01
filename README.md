@@ -39,6 +39,35 @@ run install script
 ```
 ./install.sh
 ```
+* Download the CS-Cart installation package from our website:
+```
+cd data/www/
+wget "https://www.cs-cart.com/index.php?dispatch=pages.get_trial&page_id=297&edition=ultimate" -O cscart.zip
+```
+or, if you want to download Multi-Vendor:
+```
+wget "https://www.cs-cart.com/index.php?dispatch=pages.get_trial&page_id=297&edition=multivendor" -O multi-vendor.zip
+```
+If you see the Command not found message on CentOS, then install wget first by using this command: yum install wget or apt install wget.
+
+* Unzip the CS-Cart installation package:
+```
+unzip cscart.zip
+```
+or
+```
+unzip multi-vendor.zip
+```
+* Change the owner and set file permissions for CS-Cart installation by executing these commands one by one:
+
+```
+chown -R $USER ./
+chmod 644 config.local.php
+chmod -R 755 design images var
+find design -type f -print0 | xargs -0 chmod 644
+find images -type f -print0 | xargs -0 chmod 644
+find var -type f -print0 | xargs -0 chmod 644
+```
 
 Open your domain name in browser to install CS-Cart.
 Use "mysql" in MySQL Server Host and credentials from .env (CSCART_MYSQL_DB, CSCART_MYSQL_USER, CSCART_MYSQL_PASS).
