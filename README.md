@@ -7,12 +7,13 @@ Services for CS-Cart in Docker containers include Nginx, PHP-FPM with Cron, MySQ
 ## Installation
 Tested on Ubuntu 22.04 (LTS) x64
 
-Required docker, docker compose plugin, curl, git, DNS A record point to server IP.
+Required docker, docker compose plugin, curl, git, unzip DNS A record point to server IP.
 
 Check [Official documentation](https://docs.docker.com/engine/install/ubuntu/) for docker install.
 Please use strong passwords in web and FTP services!
 
 ```
+apt install curl git unzip
 git clone https://github.com/cscart/docker.git
 cd docker
 chmod +x ./install.sh
@@ -38,6 +39,27 @@ Change values on **.env** file
 run install script
 ```
 ./install.sh
+```
+
+* Download the CS-Cart installation package from our website https://www.cs-cart.com and replace to **data/www/**
+```
+cd data/www/
+```
+
+* Unzip the CS-Cart installation package:
+```
+unzip *.zip
+```
+
+* Change the owner and set file permissions for CS-Cart installation by executing these commands one by one:
+
+```
+chown -R $USER ./
+chmod 644 config.local.php
+chmod -R 755 design images var
+find design -type f -print0 | xargs -0 chmod 644
+find images -type f -print0 | xargs -0 chmod 644
+find var -type f -print0 | xargs -0 chmod 644
 ```
 
 Open your domain name in browser to install CS-Cart.
