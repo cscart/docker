@@ -36,23 +36,22 @@ Change values on **.env** file
 
 * View "Custom data" section in .env file for view/edit default logins, paths and etc.
 
-run install script
+Run install script
 ```
 ./install.sh
 ```
 
-* Download the CS-Cart installation package from our website https://www.cs-cart.com and replace to **data/www/**
+Download the CS-Cart installation package from our website https://www.cs-cart.com and replace to **data/www/**
 ```
 cd data/www/
 ```
 
-* Unzip the CS-Cart installation package:
+Unzip the CS-Cart installation package:
 ```
 unzip *.zip
 ```
 
-* Change the owner and set file permissions for CS-Cart installation by executing these commands one by one:
-
+Change the owner and set file permissions for CS-Cart installation by executing these commands one by one:
 ```
 chown -R $USER ./
 chmod 644 config.local.php
